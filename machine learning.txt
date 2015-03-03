@@ -1,0 +1,62 @@
+import numpy as np
+from scipy.optimize import minimize
+from scipy.io import loadmat
+from math import sqrt
+
+mat = loadmat('C:/Users/Rahul/Desktop/basecode/mnist_all.mat')
+ #loads the MAT object as a Dictionary
+mat.keys()
+print mat.keys()
+train0= mat.get('train0')
+print train0.shape
+train1= mat.get('train1')
+print train1.shape
+train2= mat.get('train2')
+print train2.shape
+train3= mat.get('train3')
+print train3.shape
+train4= mat.get('train4')
+print train4.shape
+train5= mat.get('train5')
+print train5.shape
+train6= mat.get('train6')
+print train6.shape
+train7= mat.get('train7')
+print train7.shape
+train8= mat.get('train8')
+print train8.shape
+train9= mat.get('train9')
+print train9.shape
+
+trains=np.concatenate((train0,train1,train2,train3,train4,train5,train6,train7,train8,train9),axis=0)
+print trains.shape
+
+print "after this line are test matrices"
+
+test0= mat.get('test0')
+print test0.shape
+test1= mat.get('test1')
+print test1.shape
+test2= mat.get('test2')
+print test2.shape
+test3= mat.get('test3')
+print test3.shape
+test4= mat.get('test4')
+print test4.shape
+test5= mat.get('test5')
+print test5.shape
+test6= mat.get('test6')
+print test6.shape
+test7= mat.get('test7')
+print test7.shape
+test8= mat.get('test8')
+print test8.shape
+test9= mat.get('test9')
+print test9.shape
+
+tests=np.concatenate((test0,test1,test2,test3,test4,test5,test6,test7,test8,test9),axis=0)
+print tests.shape
+
+
+#a=np.ones(shape=(len(train1),1))
+#np.append(train1,a)
