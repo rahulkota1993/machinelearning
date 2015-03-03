@@ -3,7 +3,7 @@ from scipy.optimize import minimize
 from scipy.io import loadmat
 from math import sqrt
 
-mat = loadmat('C:/Users/Rahul/Desktop/basecode/mnist_all.mat')
+mat = loadmat('/home/getsidd/Desktop/basecode/mnist_all.mat')
  #loads the MAT object as a Dictionary
 mat.keys()
 print mat.keys()
@@ -60,3 +60,49 @@ print tests.shape
 
 #a=np.ones(shape=(len(train1),1))
 #np.append(train1,a)
+result = np.ones((len(trains),1))
+print result
+
+#print result.shape
+sum =0;
+for i in range(10):
+        trainx = mat.get('train'+str(i))
+        for j in range(len(trainx)):
+            result[j+sum] = i
+        sum = sum+len(trainx)
+print result.shape
+trains_nrml = np.divide(trains,255.0)
+tests_nrml = np.divide(tests,255.0)
+print trains_nrml
+print tests_nrml
+a= range(trains.shape[0])
+aperm = np.random.permutation(a)
+training = trains_nrml[aperm[0:50000],:]
+validation = trains_nrml[aperm[50000:],:]
+print training.shape
+print validation.shape
+b = range(result.shape[0])
+bperm = np.random.permutation(b)
+training_label = result[aperm[0:50000],:]
+validation_label = result[aperm[50000:],:]
+print training_label.shape
+print validation_label.shape
+
+no_delete=0
+temp = np.all(training == training[0,:],axis=0)
+print temp.shape
+for i in range(784):
+    if(temp[i]==True):
+        j=i-no_delete
+        training = np.delete(training,j,1)
+    no_delete = no_delete+1
+    
+print training.shape
+#print temp
+
+
+#print a
+#print train1
+
+
+
