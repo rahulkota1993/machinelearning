@@ -2,7 +2,6 @@ import numpy as np
 from scipy.optimize import minimize
 from scipy.io import loadmat
 from math import sqrt
-from math import exp
 
 
 def initializeWeights(n_in,n_out):
@@ -28,7 +27,8 @@ def sigmoid(z):
     """# Notice that z can be a scalar, a vector or a matrix
     # return the sigmoid of input z"""
     
-    return  1/(1+ np.exp(-1*z)) #your code here
+    sig=  1/(1+ np.exp(-1*z)) #your code here
+    return sig
     
     
 
@@ -64,7 +64,7 @@ def preprocess():
     
     
     #Your code here
-    mat = loadmat('C:/Users/RAJARSH/Desktop/basecode/mnist_all.mat')
+    mat = loadmat('C:/Users/Rahul/Desktop/basecode/mnist_all.mat')
  #loads the MAT object as a Dictionary
     mat.keys()
     print mat.keys()
@@ -81,8 +81,6 @@ def preprocess():
 
     trains=np.concatenate((train0,train1,train2,train3,train4,train5,train6,train7,train8,train9),axis=0)
 
-    print "after this line are test matrices"
-
     test0= mat.get('test0')
     test1= mat.get('test1')
     test2= mat.get('test2')
@@ -95,20 +93,18 @@ def preprocess():
     test9= mat.get('test9')
 
     tests=np.concatenate((test0,test1,test2,test3,test4,test5,test6,test7,test8,test9),axis=0)
-    print tests.shape
 
 
     #a=np.ones(shape=(len(train1),1))
     #np.append(train1,a)
     result = np.ones((len(trains),1))
-    print result
 
 #print result.shape
     sum =0;
     for i in range(10):
         trainx = mat.get('train'+str(i))
         for j in range(len(trainx)):
-            result[j+sum] = i
+            result[j+sum,0] = i
         sum = sum+len(trainx)
     print result.shape
     test_label = np.ones((len(tests),1))
@@ -116,35 +112,25 @@ def preprocess():
     for i in range(10):
         testx = mat.get('test'+str(i))
         for j in range(len(testx)):
-            test_label[j+mus] = i
+            test_label[j+mus,0] = i
         mus = mus+len(testx)
     trains_nrml = np.divide(trains,255.0)
     tests_nrml = np.divide(tests,255.0)
-    print trains_nrml
-    print tests_nrml
     a= range(trains.shape[0])
     aperm = np.random.permutation(a)
     training = trains_nrml[aperm[0:50000],:]
     validation = trains_nrml[aperm[50000:],:]
-    print training.shape
-    print validation.shape
-    b = range(result.shape[0])
-    bperm = np.random.permutation(b)
     train_label = result[aperm[0:50000],:]
     validation_label = result[aperm[50000:],:]
-    print train_label.shape
-    print validation_label.shape
     
     full=np.concatenate((training,validation,tests),axis=0)
-    no_delete=0
     temp = np.all(full == full[0,:],axis=0)
-    print temp.shape
     full=full[:,~temp]
+    full=np.double(full)
     train_data=full[0:50000,:]
     validation_data=full[50000:60000,:]
     test_data=full[60000:,:]
         
-    print training.shape
     
     
     return train_data, train_label, validation_data, validation_label, test_data, test_label
@@ -206,6 +192,7 @@ def nnObjFunction(params, *args):
     #
     w1_trans=w1.T
     a=np.dot(train,w1_trans)
+    
     z1=sigmoid(a)
     addcol=np.ones((train_data.shape[0],1))
     z=np.concatenate((z1,addcol),axis=1)
@@ -216,18 +203,20 @@ def nnObjFunction(params, *args):
     for i in range(training_label.shape[0]):
         label[i,training_label[i,0]]=1
     result0=(label*np.log(o))+((1-label)*np.log(1-o))
-    result1=-result0.sum()/50000
+    result1=-result0.sum()/train_data.shape[0]
     result2=(w1*w1).sum()+(w2*w2).sum()
-    obj_val=result1+((lambdaval/100000)*(result2))
+    obj_val=result1+((lambdaval/(2*train_data.shape[0]))*(result2))
     
     grad_w2=np.dot(((o-label).T),z)
-    grad_w2=(grad_w2+lambdaval*w2)/50000
+    grad_w2=(grad_w2+(lambdaval*w2))/train_data.shape[0]
     
-    delta=(1-z)*z*np.dot((o-label),w2)
+    delta=(1-z)*z
+    delta1 = np.dot((o-label),w2)
+    delta_f = delta * delta1
     
-    grad_w1=np.dot(delta.T,train)
-    grad_w1=np.delete(grad_w1,n_hidden,0)
-    grad_w1=(grad_w1+lambdaval*w1)/50000
+    grad_w1=np.dot(delta_f.T,train)
+    grad_w1=grad_w1[0:grad_w1.shape[0]-1]
+    grad_w1=(grad_w1+(lambdaval*w1))/train_data.shape[0]
     
     
     
@@ -237,8 +226,9 @@ def nnObjFunction(params, *args):
             
     #Make sure you reshape the gradient matrices to a 1D array. for instance if your gradient matrices are grad_w1 and grad_w2
     #you would use code similar to the one below to create a flat array
-    obj_grad = np.concatenate((grad_w2.flatten(), grad_w1.flatten()),0)
+    obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()),0)
     
+    print obj_val
     return (obj_val,obj_grad)
 
 
@@ -294,7 +284,7 @@ train_data, train_label, validation_data,validation_label, test_data, test_label
 n_input = train_data.shape[1]; 
 
 # set the number of nodes in hidden unit (not including bias unit)
-n_hidden = 50;
+n_hidden = 20;
 				   
 # set the number of nodes in output unit
 n_class = 10;				   
@@ -307,7 +297,7 @@ initial_w2 = initializeWeights(n_hidden, n_class);
 initialWeights = np.concatenate((initial_w1.flatten(), initial_w2.flatten()),0)
 
 # set the regularization hyper-parameter
-lambdaval = 0;
+lambdaval = 0.1;
 
 
 args = (n_input, n_hidden, n_class, train_data, train_label, lambdaval)
