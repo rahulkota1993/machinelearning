@@ -27,7 +27,11 @@ def sigmoid(z):
     """# Notice that z can be a scalar, a vector or a matrix
     # return the sigmoid of input z"""
     
+<<<<<<< HEAD
     sig=  1/(1+ np.exp(-1*z)) 
+=======
+    sig=  1/(1+ np.exp(-1*z)) #your code here
+>>>>>>> origin/master
     return sig
     
     
@@ -59,8 +63,20 @@ def preprocess():
      - normalize the data to [0, 1]
      - feature selection"""
     
+<<<<<<< HEAD
     mat = loadmat('C:/Users/Rahul/Desktop/basecode/mnist_all.mat')
     mat.keys()
+=======
+    
+    #Pick a reasonable size for validation data
+    
+    
+    #Your code here
+    mat = loadmat('C:/Users/Rahul/Desktop/basecode/mnist_all.mat')
+ #loads the MAT object as a Dictionary
+    mat.keys()
+    print mat.keys()
+>>>>>>> origin/master
     train0= mat.get('train0')
     train1= mat.get('train1')
     train2= mat.get('train2')
@@ -86,15 +102,29 @@ def preprocess():
     test9= mat.get('test9')
 
     tests=np.concatenate((test0,test1,test2,test3,test4,test5,test6,test7,test8,test9),axis=0)
+<<<<<<< HEAD
     
     #creating labels for training, validation and test data
     result = np.ones((len(trains),1))
+=======
+
+
+    #a=np.ones(shape=(len(train1),1))
+    #np.append(train1,a)
+    result = np.ones((len(trains),1))
+
+#print result.shape
+>>>>>>> origin/master
     sum =0;
     for i in range(10):
         trainx = mat.get('train'+str(i))
         for j in range(len(trainx)):
             result[j+sum,0] = i
         sum = sum+len(trainx)
+<<<<<<< HEAD
+=======
+    print result.shape
+>>>>>>> origin/master
     test_label = np.ones((len(tests),1))
     mus=0
     for i in range(10):
@@ -102,12 +132,17 @@ def preprocess():
         for j in range(len(testx)):
             test_label[j+mus,0] = i
         mus = mus+len(testx)
+<<<<<<< HEAD
         
     #normalising the data
     trains_nrml = np.divide(trains,255.0)
     tests_nrml = np.divide(tests,255.0)
     
     #randomising the data
+=======
+    trains_nrml = np.divide(trains,255.0)
+    tests_nrml = np.divide(tests,255.0)
+>>>>>>> origin/master
     a= range(trains.shape[0])
     aperm = np.random.permutation(a)
     training = trains_nrml[aperm[0:50000],:]
@@ -115,7 +150,10 @@ def preprocess():
     train_label = result[aperm[0:50000],:]
     validation_label = result[aperm[50000:],:]
     
+<<<<<<< HEAD
     #performing feature selection
+=======
+>>>>>>> origin/master
     full=np.concatenate((training,validation,tests),axis=0)
     temp = np.all(full == full[0,:],axis=0)
     full=full[:,~temp]
@@ -174,6 +212,7 @@ def nnObjFunction(params, *args):
     w1 = params[0:n_hidden * (n_input + 1)].reshape( (n_hidden, (n_input + 1)))
     w2 = params[(n_hidden * (n_input + 1)):].reshape((n_class, (n_hidden + 1)))
     obj_val = 0  
+<<<<<<< HEAD
     
     # adding bias for the input data and performing feed forward
     addcolumn=np.ones(((train_data.shape[0]),1))
@@ -183,11 +222,27 @@ def nnObjFunction(params, *args):
     z1=sigmoid(a) #intermediate output
     
     # adding bias to the input nodes and performing feed forward
+=======
+    addcolumn=np.ones(((train_data.shape[0]),1))
+    train=np.concatenate((train_data,addcolumn),axis=1)
+    
+    #Your code here
+    #
+    #
+    #
+    #
+    #
+    w1_trans=w1.T
+    a=np.dot(train,w1_trans)
+    
+    z1=sigmoid(a)
+>>>>>>> origin/master
     addcol=np.ones((train_data.shape[0],1))
     z=np.concatenate((z1,addcol),axis=1)
     w2_trans=w2.T
     b=np.dot(z,w2_trans)
     o=sigmoid(b)
+<<<<<<< HEAD
     
     #restructuring the labels
     label=np.zeros((train_data.shape[0],10))
@@ -217,6 +272,32 @@ def nnObjFunction(params, *args):
     grad_w1=grad_w1[0:grad_w1.shape[0]-1]
     #adding regularisation to the gradience1
     grad_w1=(grad_w1+(lambdaval*w1))/train_data.shape[0]
+=======
+    label=np.zeros((train_data.shape[0],10))
+    for i in range(training_label.shape[0]):
+        label[i,training_label[i,0]]=1
+    result0=(label*np.log(o))+((1-label)*np.log(1-o))
+    result1=-result0.sum()/train_data.shape[0]
+    result2=(w1*w1).sum()+(w2*w2).sum()
+    obj_val=result1+((lambdaval/(2*train_data.shape[0]))*(result2))
+    
+    grad_w2=np.dot(((o-label).T),z)
+    grad_w2=(grad_w2+(lambdaval*w2))/train_data.shape[0]
+    
+    delta=(1-z)*z
+    delta1 = np.dot((o-label),w2)
+    delta_f = delta * delta1
+    
+    grad_w1=np.dot(delta_f.T,train)
+    grad_w1=grad_w1[0:grad_w1.shape[0]-1]
+    grad_w1=(grad_w1+(lambdaval*w1))/train_data.shape[0]
+    
+    
+    
+    
+            
+            
+>>>>>>> origin/master
             
     #Make sure you reshape the gradient matrices to a 1D array. for instance if your gradient matrices are grad_w1 and grad_w2
     #you would use code similar to the one below to create a flat array
@@ -331,4 +412,8 @@ predicted_label = nnPredict(w1,w2,test_data)
 
 #find the accuracy on Validation Dataset
 
+<<<<<<< HEAD
 print('\n Test set Accuracy:' +  str(100*np.mean((predicted_label == test_label).astype(float))) + '%')
+=======
+print('\n Test set Accuracy:' +  str(100*np.mean((predicted_label == test_label).astype(float))) + '%')
+>>>>>>> origin/master
