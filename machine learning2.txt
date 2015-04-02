@@ -1,0 +1,61 @@
+import numpy as np
+from scipy.optimize import minimize
+from scipy.io import loadmat
+from math import sqrt
+import scipy.io
+import matplotlib.pyplot as plt
+import pickle
+
+
+X,y,Xtest,ytest = pickle.load(open('C:/Users/Rahul/Desktop/python2/sample.pickle','rb')) 
+groups=np.unique(y)
+a=y.shape[0]
+print a
+print y.shape[0]
+#Creating empty matrices for grouping two columns for classes in y
+emp=[[] for i in range(X.shape[1]*len(groups))]
+mtotal,mtotal1=[],[]
+
+#adding elements to arrays by comparing features of y
+for i in range(a):
+    for j in range(len(groups)):
+        if(y[i]==groups[j]):
+            for k in range(X.shape[1]):
+                emp[j+(k*len(groups))].append(X[i][k])
+            
+            
+            
+for i in range(2*len(groups)):
+    print np.mean(emp[i])
+
+meansarray=[]
+for i in range(X.shape[1]*len(groups)):
+    meansarray.append(np.mean(emp[i]))
+#converting list to array
+k=np.array(meansarray)
+
+c=k.reshape(2,5).transpose()
+
+print c.shape
+
+
+
+
+
+    
+    
+
+
+            
+  
+
+        
+"""print np.mean(mtotal)
+print np.mean(mtotal1)
+print np.mean(X)
+print groups
+means=np.matrix([[np.mean(m1), np.mean(m11)], [np.mean(m2), np.mean(m22)],[np.mean(m3), np.mean(m33)], [np.mean(m4), np.mean(m44)],[np.mean(m5), np.mean(m55)]])
+print means.shape
+print means"""
+        
+
