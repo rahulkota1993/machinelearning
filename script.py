@@ -203,8 +203,10 @@ def learnOLERegression(X,y):
     # w = d x 1                                                                
     # IMPLEMENT THIS METHOD   
     temp=np.linalg.inv(np.dot(X.transpose(),X))
-    #print temp.shape
-    w=np.dot(temp,np.dot(X.transpose(),y))                                                
+    
+    w=np.dot(temp,np.dot(X.transpose(),y))   
+    
+                                            
     return w
 
 def learnRidgeERegression(X,y,lambd):
@@ -216,7 +218,7 @@ def learnRidgeERegression(X,y,lambd):
     # w = d x 1                                                                
 
     # IMPLEMENT THIS METHOD   
-    w=np.dot(np.dot(np.linalg.inv(lambd*np.identity(X.transpose().shape[0])+np.dot(X.transpose(),X)),X.transpose()),y)                                                
+    w=np.dot(np.dot(np.linalg.inv(lambd*X.shape[0]*np.identity(X.transpose().shape[0])+np.dot(X.transpose(),X)),X.transpose()),y)                                                
     return w
 
 def testOLERegression(w,Xtest,ytest):
@@ -228,8 +230,10 @@ def testOLERegression(w,Xtest,ytest):
     # rmse
     
     # IMPLEMENT THIS METHOD
-    rmse=(np.dot((ytest-np.dot(Xtest,w)).transpose(),(ytest-np.dot(Xtest,w)))**0.5)/Xtest.shape[0]
-    #print rmse
+    #rmse=(np.dot((ytest-np.dot(Xtest,w)).transpose(),(ytest-np.dot(Xtest,w)))**0.5)/Xtest.shape[0]
+    
+    rmse=np.sqrt(np.dot((ytest-np.dot(Xtest,w)).transpose(),(ytest-np.dot(Xtest,w))))/Xtest.shape[0]
+    
     return rmse
 
 def regressionObjVal(w, X, y, lambd):
@@ -239,14 +243,38 @@ def regressionObjVal(w, X, y, lambd):
     # lambda                                                                  
 
     # IMPLEMENT THIS METHOD 
-    error=((np.dot((y-np.dot(X,w)).transpose(),(y-np.dot(X,w))))/(2*X.shape[0]))+ (lambd*0.5*np.dot(w.transpose(),w))
     
-    #error_grad=((1/X.shape[0])*(np.dot(w.transpose(),np.dot(X.transpose(),X))-np.dot(y.transpose,X))+(lambd*w))
-    a=1/X.shape[0]
-    b=np.dot(w.transpose(),np.dot(X.transpose(),X))
-    c=np.dot(y.transpose(),X)
-    d=b-c
-    error_grad=(a*d)-(lambd*w)                                            
+#    w=w.reshape(65,1)
+#    
+#    
+#
+#    error=((np.dot((y-np.dot(X,w)).transpose(),(y-np.dot(X,w))))/(2*float(X.shape[0])))+ float(lambd*0.5*np.dot(w.transpose(),w))
+#    #error_grad=((1/X.shape[0])*(np.dot(w.transpose(),np.dot(X.transpose(),X))-np.dot(y.transpose,X))+(lambd*w))
+#    a=1/X.shape[0]
+#    b=np.dot(w.transpose(),np.dot(X.transpose(),X))
+#    c=np.dot(y.transpose(),X)
+#    d=b-c
+#    error_grad=(a*d)-(lambd*w)     
+#sudeep   
+    #wl=np.asmatrix(w)
+    #wl=wl.transpose()
+    wl=w.reshape(65,1)
+    # error is the equation from problem 3
+    # sudeep's error = ((np.dot((y-np.dot(X,wl)).transpose(),(y-np.dot(X,wl))))/(2*float(len(y))))+ (0.5*lambd*np.dot(wl.transpose(),wl))
+    
+    error=((0.5/X.shape[0])*np.dot((y-np.dot(X,wl)).transpose(),(y-np.dot(X,wl))))+(0.5*lambd*np.dot(wl.transpose(),wl))
+     #error grad is the gradiance of the above equation
+    
+
+    error_grad =  ((np.dot(X.transpose(),(np.dot(X,wl)-y)))/float(len(y))) + (lambd*wl) 
+    #grad=((1/X.shape[0])*(((-1)*(np.dot(y.transpose(),X)))+np.dot(wl.transpose(),np.dot(X.transpose,X))))+(lambd*wl) 
+   
+    #trial
+    
+   
+  
+    error_grad = np.squeeze(error_grad)
+                                       
     return error, error_grad
 
 def mapNonLinear(x,p):
@@ -256,6 +284,11 @@ def mapNonLinear(x,p):
     # Outputs:                                                                 
     # Xd - (N x (d+1))                                                         
     # IMPLEMENT THIS METHOD
+    Xd=np.ones((x.shape[0],p+1))
+    
+    for i in range(x.shape[0]):
+        for j in range(p+1):
+            Xd[i][j]=x[i]**j
     
     return Xd
 
@@ -283,6 +316,7 @@ Xtest_i = np.concatenate((np.ones((Xtest.shape[0],1)), Xtest), axis=1)
 
 w = learnOLERegression(X,y)
 mle = testOLERegression(w,Xtest,ytest)
+print w.shape
 
 w_i = learnOLERegression(X_i,y)
 mle_i = testOLERegression(w_i,Xtest_i,ytest)
@@ -301,6 +335,7 @@ for lambd in lambdas:
     i = i + 1
 plt.plot(lambdas,rmses3)
 
+
 # Problem 4
 k = 21
 lambdas = np.linspace(0, 0.004, num=k)
@@ -317,6 +352,8 @@ for lambd in lambdas:
     rmses4[i] = testOLERegression(w_l_1,Xtest_i,ytest)
     i = i + 1
 plt.plot(lambdas,rmses4)
+
+#print rmses4
 
 
 
