@@ -40,7 +40,7 @@ def ldaLearn(X,y):
                     ark3=np.array(k3)#final covariance matrix    
                     iark3=np.linalg.inv(ark3)#inverse of final covariance matrix
                 
-                    means=ark
+                    means=ark.transpose()
                     covmat=ark3
                     #print means
                     #print covmat.shape                    
@@ -71,7 +71,7 @@ def qdaLearn(X,y):
     ark1=np.array(k1)#arrays with same features
     ark2=np.array(k2)#ark2=covariance
     covmats=ark2
-    means=ark
+    means=ark.transpose()
    
     
     return means,covmats
@@ -91,6 +91,7 @@ def ldaTest(means,covmat,Xtest,ytest):
     iark3=np.linalg.inv(covmat)#inverse of final covariance matrix
     
     #ark[0].reshape(1,2)*iark3*X.transpose()
+    means=means.transpose()
     for i in range(len(groups)):
         tempd=means[i].reshape(1,2)
        # print means[i]
@@ -126,7 +127,7 @@ def qdaTest(means,covmats,Xtest,ytest):
     mul=[]
     groups=np.unique(ytest)
     
-       
+    means=means.transpose()
         
     for i in range(len(groups)):
         iark3=np.linalg.inv(covmats[i])
@@ -148,49 +149,7 @@ def qdaTest(means,covmats,Xtest,ytest):
             f.append(fi)
             
     label=(np.argmax(np.array(f).reshape(5,100).transpose(),1)+1).reshape(100,1)
-#from here
-#arkf=arkf.reshape(5,100).transpose()
-#label=np.argmax(arkf,1)
-#
-#label=label+1
-#label=label.reshape(100,1)
-#print label.shape
-##from here
-#    f=[]
-#    mul=[]
-#    groups=np.unique(ytest)
-#    #ark[0].reshape(1,2)*iark3*X.transpose()
-#    for i in range(len(groups)):
-#        iark3=np.linalg.inv(covmats[i])
-#        iark3_det=np.log(np.linalg.det(covmats[i]))
-#        tempd=means[i].reshape(1,2)
-#        
-#        
-#        for j in range(len(Xtest)):
-#                
-#            a=Xtest[j]-means[i]
-#            b=a.transpose()
-#            
-#            fi=(-0.5)*iark3_det- (0.5)*np.dot(np.dot(b,iark3),a)
-#    
-#            f.append(fi)
-#    
-#    
-#    arkf=np.array(f)
-#    print arkf.shape
-#    
-#    arkf=arkf.reshape(5,100).transpose()
-#    print arkf.shape
-#    #
-#    #arkf1=arkf.reshape(5,100).transpose()
-#    #print arkf1
-#    label=np.argmax(arkf,1)
-#    
-#    label=label+1
-#    label=label.reshape(100,1)
-#    print label.shape
-#    
-#    print('\n Training set Accuracy:' + str(100*np.mean((label == ytest).astype(float))) + '%')
+
     acc=100*np.mean((label == ytest).astype(float))
    
     return acc
@@ -230,9 +189,7 @@ def testOLERegression(w,Xtest,ytest):
     # rmse
     
     # IMPLEMENT THIS METHOD
-    #rmse=(np.dot((ytest-np.dot(Xtest,w)).transpose(),(ytest-np.dot(Xtest,w)))**0.5)/Xtest.shape[0]
-    
-    rmse=np.sqrt(np.dot((ytest-np.dot(Xtest,w)).transpose(),(ytest-np.dot(Xtest,w))))/Xtest.shape[0]
+    rmse=(np.dot((ytest-np.dot(Xtest,w)).transpose(),(ytest-np.dot(Xtest,w)))**0.5)/Xtest.shape[0]
     
     return rmse
 
@@ -243,38 +200,15 @@ def regressionObjVal(w, X, y, lambd):
     # lambda                                                                  
 
     # IMPLEMENT THIS METHOD 
-    
-#    w=w.reshape(65,1)
-#    
-#    
-#
-#    error=((np.dot((y-np.dot(X,w)).transpose(),(y-np.dot(X,w))))/(2*float(X.shape[0])))+ float(lambd*0.5*np.dot(w.transpose(),w))
-#    #error_grad=((1/X.shape[0])*(np.dot(w.transpose(),np.dot(X.transpose(),X))-np.dot(y.transpose,X))+(lambd*w))
-#    a=1/X.shape[0]
-#    b=np.dot(w.transpose(),np.dot(X.transpose(),X))
-#    c=np.dot(y.transpose(),X)
-#    d=b-c
-#    error_grad=(a*d)-(lambd*w)     
-#sudeep   
-    #wl=np.asmatrix(w)
-    #wl=wl.transpose()
-    wl=w.reshape(65,1)
-    # error is the equation from problem 3
-    # sudeep's error = ((np.dot((y-np.dot(X,wl)).transpose(),(y-np.dot(X,wl))))/(2*float(len(y))))+ (0.5*lambd*np.dot(wl.transpose(),wl))
-    
-    error=((0.5/X.shape[0])*np.dot((y-np.dot(X,wl)).transpose(),(y-np.dot(X,wl))))+(0.5*lambd*np.dot(wl.transpose(),wl))
-     #error grad is the gradiance of the above equation
-    
+    w=w.reshape(65,1)
+   
+    error=((0.5/X.shape[0])*np.dot((y-np.dot(X,w)).transpose(),(y-np.dot(X,w))))+(0.5*lambd*np.dot(w.transpose(),w))
+     
 
-    error_grad =  ((np.dot(X.transpose(),(np.dot(X,wl)-y)))/float(len(y))) + (lambd*wl) 
+    error_grad = np.squeeze( ((np.dot(X.transpose(),(np.dot(X,w)-y)))/X.shape[0]) + (lambd*w) )
     #grad=((1/X.shape[0])*(((-1)*(np.dot(y.transpose(),X)))+np.dot(wl.transpose(),np.dot(X.transpose,X))))+(lambd*wl) 
-   
-    #trial
     
-   
-  
-    error_grad = np.squeeze(error_grad)
-                                       
+                                
     return error, error_grad
 
 def mapNonLinear(x,p):
@@ -289,6 +223,7 @@ def mapNonLinear(x,p):
     for i in range(x.shape[0]):
         for j in range(p+1):
             Xd[i][j]=x[i]**j
+    
     
     return Xd
 
@@ -316,7 +251,6 @@ Xtest_i = np.concatenate((np.ones((Xtest.shape[0],1)), Xtest), axis=1)
 
 w = learnOLERegression(X,y)
 mle = testOLERegression(w,Xtest,ytest)
-print w.shape
 
 w_i = learnOLERegression(X_i,y)
 mle_i = testOLERegression(w_i,Xtest_i,ytest)
@@ -334,7 +268,7 @@ for lambd in lambdas:
     rmses3[i] = testOLERegression(w_l,Xtest_i,ytest)
     i = i + 1
 plt.plot(lambdas,rmses3)
-
+plt.show()
 
 # Problem 4
 k = 21
@@ -351,7 +285,8 @@ for lambd in lambdas:
         w_l_1[j] = w_l.x[j]
     rmses4[i] = testOLERegression(w_l_1,Xtest_i,ytest)
     i = i + 1
-plt.plot(lambdas,rmses4)
+#plt.plot(lambdas,rmses4)
+#plt.show()
 
 #print rmses4
 
@@ -369,5 +304,7 @@ for p in range(pmax):
     rmses5[p,0] = testOLERegression(w_d1,Xdtest,ytest)
     w_d2 = learnRidgeERegression(Xd,y,lambda_opt)
     rmses5[p,1] = testOLERegression(w_d2,Xdtest,ytest)
-plt.plot(range(pmax),rmses5)
-plt.legend(('No Regularization','Regularization'))
+print rmses5
+print rmses5.shape
+#plt.plot(range(pmax),rmses5)
+#plt.legend(('No Regularization','Regularization'))
