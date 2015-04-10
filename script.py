@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 from scipy.optimize import minimize
 from scipy.io import loadmat
@@ -18,32 +19,14 @@ def ldaLearn(X,y):
     # IMPLEMENT THIS METHOD
                     groups=np.unique(y)
                     k=[]
-                    k1=[]
-                    k2=[]
                     for i in groups:
                         temp=X[np.where(y==i)[0],]
                         k.append(np.mean(temp,0))
-                        k1.append(temp)
-                        tt=np.mean(X,0)
-                        cm=temp-tt
-                        k2.append(np.dot(cm.transpose(),cm)/len(cm))
+                       
                         
-                    ark=np.array(k)#means
-                    ark1=np.array(k1)#arrays with same features                
-                    ark2=np.array(k2)#ark2=covariance matrices
-                    
-                    #Calculating covariance matrix combining all covariance matrices
-                    k3=np.zeros((2,2))#Initialize a 2*2 Matrix
-                    for i in range(len(groups)):
-                        k3=(k3+(ark2[i]*ark1[i].shape[0]/X.shape[0]))#Covariance formula=
-            
-                    ark3=np.array(k3)#final covariance matrix    
-                    iark3=np.linalg.inv(ark3)#inverse of final covariance matrix
-                
+                    ark=np.array(k)#means               
                     means=ark.transpose()
-                    covmat=ark3
-                    #print means
-                    #print covmat.shape                    
+                    covmat=np.cov(X.transpose())
                     return means,covmat
 
 def qdaLearn(X,y):
@@ -58,22 +41,15 @@ def qdaLearn(X,y):
     # IMPLEMENT THIS METHOD
     groups=np.unique(y)
     k=[]
-    k1=[]
     k2=[]
     for i in groups:
         temp=X[np.where(y==i)[0],]
         k.append(np.mean(temp,0))
-        k1.append(temp)
-        tt=np.mean(X,0)
-        cm=temp-tt
-        k2.append(np.dot(cm.transpose(),cm)/len(cm))
+        k2.append(np.cov(temp.transpose()))
     ark=np.array(k)#means
-    ark1=np.array(k1)#arrays with same features
     ark2=np.array(k2)#ark2=covariance
     covmats=ark2
     means=ark.transpose()
-   
-    
     return means,covmats
 
 def ldaTest(means,covmat,Xtest,ytest):
@@ -85,34 +61,32 @@ def ldaTest(means,covmat,Xtest,ytest):
     # acc - A scalar accuracy value
     
     # IMPLEMENT THIS METHOD
-    f=[]
-    mul=[]
-    groups=np.unique(ytest)#no. of classes which are unique
+    groups=np.unique(ytest)
     iark3=np.linalg.inv(covmat)#inverse of final covariance matrix
-    
-    #ark[0].reshape(1,2)*iark3*X.transpose()
+    det_iark3=np.linalg.det(covmat)
+    result=[]
     means=means.transpose()
-    for i in range(len(groups)):
-        tempd=means[i].reshape(1,2)
-       # print means[i]
-        #print tempd
-        mul=(np.dot(np.dot(tempd,iark3),Xtest.transpose()))-(0.5*np.dot(np.dot(tempd,iark3),tempd.transpose()))
-        #mul=((tempd.dot(iark3).dot(Xtest.transpose()))-(0.5*temp.dot(iark3).dot(tempd.transpose())))
-        f.append(mul)
+    for i in range(ytest.shape[0]):
+        temp=np.mat(Xtest[i,:])
+        mul=[]
+        for j in range(len(groups)):
+            tempmeans=np.mat(means[j,:])
+            tempresult=temp-tempmeans
+            a=(1/((2*3.14*(det_iark3**2))**0.5))
+            b=np.exp(-0.5*np.dot(np.dot(tempresult,iark3),tempresult.transpose()))
+            mul.append(a*b)
+        mul=np.array(mul)
+        result.append(np.argmax(mul)+1)
+    result=np.array(result)
+    label=result.reshape(ytest.shape[0],1)     
+      
+            
         
     
-    label=(np.argmax(np.array(f).reshape(5,100).transpose(),1)+1).reshape(100,1)
-    #arkf=np.array(f)
-    #arkf1=arkf.reshape(5,100).transpose()
-    
-    #label=np.argmax(arkf1,1)
-    #
-    #label=label+1
-    #label=label.reshape(100,1)
-    print('\n Training set Accuracy:' + str(100*np.mean((label == ytest).astype(float))) + '%')
+   # print('\n Training set Accuracy:' + str(100*np.mean((label == ytest).astype(float))) + '%')
     acc=100*np.mean((label == ytest).astype(float))
   
-    return acc
+    return acc,label
 
 def qdaTest(means,covmats,Xtest,ytest):
     # Inputs
@@ -123,35 +97,26 @@ def qdaTest(means,covmats,Xtest,ytest):
     # acc - A scalar accuracy value
     
     # IMPLEMENT THIS METHOD
-    f=[]
-    mul=[]
     groups=np.unique(ytest)
-    
+    result=[]
     means=means.transpose()
+    for i in range(ytest.shape[0]):
+        temp=np.mat(Xtest[i,:])
+        mul=[]
+        for j in range(len(groups)):
+            iark3=np.linalg.inv(covmats[j])#inverse of final covariance matrix
+            det_iark3=np.linalg.det(covmats[j])
+            tempmeans=np.mat(means[j,:])
+            tempresult=temp-tempmeans
+            a=(1/((2*3.14*(det_iark3**2))**0.5))
+            b=np.exp(-0.5*np.dot(np.dot(tempresult,iark3),tempresult.transpose()))
+            mul.append(a*b)
+        mul=np.array(mul)
+        result.append(np.argmax(mul)+1)
+    result=np.array(result)
+    label=result.reshape(ytest.shape[0],1)  
         
-    for i in range(len(groups)):
-        iark3=np.linalg.inv(covmats[i])
-        kk=np.linalg.det(covmats[i])
-        iark3_det=np.log(kk)
-        tempd=means[i]
-        tempd=tempd.reshape(1,2)       
-        
-        for j in range(len(Xtest)):
-                 
-            a=Xtest[j]
-            b=means[i]
-            c=a-b
-            d=c.transpose()
-            f1=iark3_det
-            f2=np.dot(d,iark3)
-            f3=np.dot(f2,c)
-            fi=(-0.5)*(f1+f3) 
-            f.append(fi)
-            
-    label=(np.argmax(np.array(f).reshape(5,100).transpose(),1)+1).reshape(100,1)
-
     acc=100*np.mean((label == ytest).astype(float))
-   
     return acc
 
 def learnOLERegression(X,y):
@@ -203,10 +168,10 @@ def regressionObjVal(w, X, y, lambd):
     w=w.reshape(65,1)
    
     error=((0.5/X.shape[0])*np.dot((y-np.dot(X,w)).transpose(),(y-np.dot(X,w))))+(0.5*lambd*np.dot(w.transpose(),w))
-     
-
-    error_grad = np.squeeze( ((np.dot(X.transpose(),(np.dot(X,w)-y)))/X.shape[0]) + (lambd*w) )
-    #grad=((1/X.shape[0])*(((-1)*(np.dot(y.transpose(),X)))+np.dot(wl.transpose(),np.dot(X.transpose,X))))+(lambd*wl) 
+    
+    kk=((np.dot(w.transpose(),np.dot(X.transpose(),X))-np.dot(y.transpose(),X))/X.shape[0]).transpose()+ (lambd*w)
+    
+    error_grad=np.squeeze(kk)
     
                                 
     return error, error_grad
@@ -235,8 +200,22 @@ X,y,Xtest,ytest = pickle.load(open('C:/Users/Rahul/Desktop/python2/sample.pickle
 
 # LDA
 means,covmat = ldaLearn(X,y)
-ldaacc = ldaTest(means,covmat,Xtest,ytest)
+ldaacc,we = ldaTest(means,covmat,Xtest,ytest)
 print('LDA Accuracy = '+str(ldaacc))
+
+#x1 = np.linspace(0,16,100)
+#x2 = np.linspace(0,16,100)
+#xv,yv = np.meshgrid(x1,x2)
+#xx=np.zeros((x1.shape[0]*x2.shape[0],2))
+#xx[:,0]=xv.ravel()
+#xx[:,1]=yv.ravel()
+#ldaacc1,lda_est_labels1 = ldaTest(means,covmat,xx,np.zeros((xx.shape[0],1)))
+##print lda_est_labels1.shape
+#plt.contourf(x1,x2,lda_est_labels1.reshape((x1.shape[0],x2.shape[0])))
+##print (lda_est_labels1.reshape((x1.shape[0],x2.shape[0]))).shape
+#plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
+#plt.show()
+
 # QDA
 means,covmats = qdaLearn(X,y)
 qdaacc = qdaTest(means,covmats,Xtest,ytest)
@@ -250,16 +229,19 @@ X_i = np.concatenate((np.ones((X.shape[0],1)), X), axis=1)
 Xtest_i = np.concatenate((np.ones((Xtest.shape[0],1)), Xtest), axis=1)
 
 w = learnOLERegression(X,y)
+plt.plot(w)
 mle = testOLERegression(w,Xtest,ytest)
-
+mle_training=testOLERegression(w,X,y)
 w_i = learnOLERegression(X_i,y)
+plt.plot(w_i)
 mle_i = testOLERegression(w_i,Xtest_i,ytest)
-
+mle_itraining=testOLERegression(w_i,X_i,y)
 print('RMSE without intercept '+str(mle))
 print('RMSE with intercept '+str(mle_i))
-
+print('RMSE without intercept for training'+str(mle_training))
+print('RMSE with intercept for training' + str(mle_itraining))
 # Problem 3
-k = 21
+k = 101
 lambdas = np.linspace(0, 0.004, num=k)
 i = 0
 rmses3 = np.zeros((k,1))
@@ -268,10 +250,19 @@ for lambd in lambdas:
     rmses3[i] = testOLERegression(w_l,Xtest_i,ytest)
     i = i + 1
 plt.plot(lambdas,rmses3)
+rms=np.zeros((k,1))
+i=0
+for lambd in lambdas:
+    w_l =learnRidgeERegression(X_i,y,lambd)
+    rms[i] = testOLERegression(w_l,X_i,y)
+    i = i + 1
+#plt.plot(lambdas,rms)
+plt.plot(w_l)
 plt.show()
 
+
 # Problem 4
-k = 21
+k = 101
 lambdas = np.linspace(0, 0.004, num=k)
 i = 0
 rmses4 = np.zeros((k,1))
@@ -304,7 +295,5 @@ for p in range(pmax):
     rmses5[p,0] = testOLERegression(w_d1,Xdtest,ytest)
     w_d2 = learnRidgeERegression(Xd,y,lambda_opt)
     rmses5[p,1] = testOLERegression(w_d2,Xdtest,ytest)
-print rmses5
-print rmses5.shape
 #plt.plot(range(pmax),rmses5)
 #plt.legend(('No Regularization','Regularization'))
